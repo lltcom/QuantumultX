@@ -1,0 +1,9 @@
+{
+ "name": "Liur Task Gallery",
+ "description": "https://github.com/lltcom/QuantumultX/tree/main",
+ "task": [
+    "0 11 * * * https://gitee.com/lxk0301/jd_scripts/raw/master/jd_bean_change.js, tag=京豆变动通知, img-url=https://raw.githubusercontent.com/Orz-3/task/master/jd.png, enabled=true",
+    "0 21 * * * https://gitee.com/lxk0301/jd_scripts/raw/master/backUp/xmSports.js, tag=小米运动, img-url=https://raw.githubusercontent.com/58xinian/icon/master/xmyd.png, enabled=true"
+    "0 21 * * * https://raw.githubusercontent.com/Semporia/Quantumult-X/master/scripts/bilibili/bilibili.js, tag=Bilibili, img-url=https://raw.githubusercontent.com/lltcom/QuantumultX/Icon/Task/bilibili.png, enabled=true"
+  ]
+}
