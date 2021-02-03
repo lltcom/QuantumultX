@@ -5,6 +5,7 @@
     "0 11 * * * https://gitee.com/lxk0301/jd_scripts/raw/master/jd_bean_change.js, tag=京豆变动通知, img-url=https://raw.githubusercontent.com/Orz-3/task/master/jd.png, enabled=true",
     "0 21 * * * https://gitee.com/lxk0301/jd_scripts/raw/master/backUp/xmSports.js, tag=小米运动, img-url=https://raw.githubusercontent.com/58xinian/icon/master/xmyd.png, enabled=true",
     "0 21 * * * https://raw.githubusercontent.com/lltcom/QuantumultX/main/smzdm/smzdm.js, tag=什么值得买, img-url=https://raw.githubusercontent.com/lltcom/QuantumultX/main/Icon/Task/smzdm.png, enabled=true",
-    "0 21 * * * https://raw.githubusercontent.com/lltcom/QuantumultX/main/bilibili/bilibili.js, tag=Bilibili, img-url=https://raw.githubusercontent.com/lltcom/QuantumultX/main/Icon/Task/bilibili.png, enabled=true"
+    "0 21 * * * https://raw.githubusercontent.com/lltcom/QuantumultX/main/bilibili/bilibili.js, tag=Bilibili, img-url=https://raw.githubusercontent.com/lltcom/QuantumultX/main/Icon/Task/bilibili.png, enabled=true",
+    "0 21 * * * https://raw.githubusercontent.com/lltcom/QuantumultX/main/TieBa/tieba.js, tag=贴吧, img-url=https://raw.githubusercontent.com/lltcom/QuantumultX/main/Icon/Task/tieba.png, enabled=true"
   ]
 }
