@@ -1,4 +1,4 @@
-/* ziye 
+/* ziye
 github地址 https://github.com/ziye12
 TG频道地址  https://t.me/ziyescript
 TG交流群   https://t.me/joinchat/AAAAAE7XHm-q1-7Np-tF3g
@@ -6,7 +6,7 @@ boxjs链接  https://raw.githubusercontent.com/ziye12/JavaScript/main/Task/ziye.
 转载请备注个名字，谢谢
 
 ⚠️笑谱
-脚本运行一次   
+脚本运行一次
 则运行6次视频 1次金蛋 1次直播（直播默认关闭，且在8点到23点有效）
 
 1.15 调整金蛋延迟为60秒
@@ -31,14 +31,14 @@ boxjs链接  https://raw.githubusercontent.com/ziye12/JavaScript/main/Task/ziye.
 2.4 直播限制为30  设置LIVE为0 不跑直播，1跑直播和视频，2单跑直播
 2.5 增加首次视频验证，灰号直接停止视频
 
-⚠️一共2个位置 2个ck  👉 3条 Secrets 
+⚠️一共2个位置 2个ck  👉 3条 Secrets
 多账号换行
 
 第一步 添加  hostname=veishop.iboxpay.com,
 
-第二步 添加笑谱获取更新TOKEN重写  
+第二步 添加笑谱获取更新TOKEN重写
 
-登录  获取更新TOKEN重写 
+登录  获取更新TOKEN重写
 
 第三步 添加笑谱获取header重写
 
@@ -80,7 +80,7 @@ const notify = $.isNode() ? require("./sendNotify") : ``;
 const COOKIE = $.isNode() ? require("./iboxpayCOOKIE") : ``;
 const logs = 0; // 0为关闭日志，1为开启
 const notifyttt = 1 // 0为关闭外部推送，1为12 23 点外部推送
-const notifyInterval = 2; // 0为关闭通知，1为所有通知，2为12 23 点通知  ， 3为 6 12 18 23 点通知 
+const notifyInterval = 2; // 0为关闭通知，1为所有通知，2为12 23 点通知  ， 3为 6 12 18 23 点通知
 const CS = 5
 $.message = '', COOKIES_SPLIT = '', CASH = '', LIVE = '', ddtime = '', spid = '', TOKEN = '', zbid = '', cashcs = '', newcashcs = '', liveId = '';
 let livecs = 0,
@@ -319,14 +319,14 @@ async function all() {
 
         if (LIVE != 2 && nowTimes.getHours() <= 18 && $.splimit.data.isUperLimit == false || tts() <= (Number(oldtime) + 48 * 60 * 60 * 1000)) {
 
-            await playo(); //播放o       
+            await playo(); //播放o
             await videoo(); //视频o
 
             if (LIVE != 2) {
                 await $.wait(30000)
                 tt = CS * 30 - 29
                 console.log(`📍本次视频运行需要${tt}秒` + '\n')
-                await play(); //播放       
+                await play(); //播放
                 await video(); //视频
                 await $.wait(tt * 1000)
                 if (!newcashcs.amount) {
@@ -367,7 +367,7 @@ function msgShow() {
 function cktime() {
     $.message += '【CK获取时间】：' + time(Number(oldtime)) + '\n'
 };
-//TOKEN更新  
+//TOKEN更新
 function refreshtoken(timeout = 0) {
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -430,7 +430,7 @@ function user(timeout = 0) {
         }, timeout)
     })
 }
-//金币信息  
+//金币信息
 function goldcoin(timeout = 0) {
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -453,7 +453,7 @@ function goldcoin(timeout = 0) {
         }, timeout)
     })
 }
-//活动id 
+//活动id
 function hdid(timeout = 0) {
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -483,7 +483,7 @@ function hdid(timeout = 0) {
         }, timeout)
     })
 }
-//账户信息  
+//账户信息
 function coin(timeout = 0) {
     return new Promise((resolve) => {
         setTimeout(() => {
@@ -885,7 +885,7 @@ function sylist(timeout = 0) {
         }, timeout)
     })
 }
-//视频上限  
+//视频上限
 function splimit(timeout = 0) {
     return new Promise((resolve) => {
         setTimeout(() => {
