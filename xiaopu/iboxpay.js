@@ -30,6 +30,9 @@ boxjs链接  https://raw.githubusercontent.com/ziye12/JavaScript/main/Task/ziye.
 2.4 修复金蛋问题，增加视频收益统计，增加上限判定，达到上限以及19点后不执行视频，
 2.4 直播限制为30  设置LIVE为0 不跑直播，1跑直播和视频，2单跑直播
 2.5 增加首次视频验证，灰号直接停止视频
+2.6 修复判定错误,增加surge获取token重写
+2.7 增加红包雨，设置LIVE等于3 开启
+2.7-2 调整红包雨运行机制
 
 ⚠️一共2个位置 2个ck  👉 3条 Secrets
 多账号换行
@@ -55,7 +58,7 @@ CASH  👉  XP_CASH
 
 ⚠️主机名以及重写👇
 
-（圈x可以获取refreshTOKEN     其他开启抓包，然后登录笑谱，找到 https://veishop.iboxpay.com/nf_gateway/nf-user-auth-web/ignore_tk/veishop/v1/ 里的响应体 refreshTOKEN）
+（圈x  surge可以获取refreshTOKEN     其他开启抓包，然后登录笑谱，找到 https://veishop.iboxpay.com/nf_gateway/nf-user-auth-web/ignore_tk/veishop/v1/ 里的响应体 refreshTOKEN）
 
 hostname=veishop.iboxpay.com
 
@@ -73,6 +76,12 @@ http-request https:\/\/veishop\.iboxpay\.com\/* script-path=https://raw.githubus
 #笑谱获取header
 笑谱获取header = type=http-request,pattern=https:\/\/veishop\.iboxpay\.com\/*,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/ziye12/JavaScript/main/Task/iboxpay.js, script-update-interval=0
 
+
+#笑谱获取更新TOKEN
+笑谱获取更新TOKEN = type=http-response,pattern=https:\/\/veishop\.iboxpay\.com\/nf_gateway\/nf-user-auth-web\/ignore_tk\/veishop\/v1\/*,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/ziye12/JavaScript/main/Task/iboxpay.js
+
+
+
 */
 const $ = Env("笑谱");
 $.idx = ($.idx = ($.getval('iboxpaySuffix') || '1') - 1) > 0 ? ($.idx + 1 + '') : ''; // 账号扩展字符
@@ -85,6 +94,8 @@ const CS = 5
 $.message = '', COOKIES_SPLIT = '', CASH = '', LIVE = '', ddtime = '', spid = '', TOKEN = '', zbid = '', cashcs = '', newcashcs = '', liveId = '';
 let livecs = 0,
     videoscs = 0,
+    LIVES = 0,
+    HBY = 0,
     liveIdcd = 0;
 RT = 30000;
 const iboxpayheaderArr = [];
@@ -97,7 +108,7 @@ if ($.isNode()) {
     // 没有设置 XP_CASH 则默认为 0 不提现
     CASH = process.env.XP_CASH || 0;
     // 没有设置 XP_live 则默认0
-    LIVE = process.env.XP_live || 60;
+    LIVE = process.env.XP_live || 3;
 }
 if ($.isNode() && process.env.XP_iboxpayHEADER) {
     COOKIES_SPLIT = process.env.COOKIES_SPLIT || "\n";
@@ -193,10 +204,17 @@ console.log(
     `============ 共 ${Length} 个${$.name}账号=============\n`
 );
 console.log(`============ 提现标准为：${CASH} =============\n`);
-if (LIVE >= 1) {
-    console.log(`============ 直播次数为：${LIVE} =============\n`);
-} else {
-    console.log(`============ 看直播关闭 =============\n`);
+if (LIVE == 0) {
+    console.log(`============ 看直播关闭，看视频开启 =============\n`);
+}
+if (LIVE == 1) {
+    console.log(`============ 看直播开启，看视频开启 =============\n`);
+}
+if (LIVE == 2) {
+    console.log(`============ 看直播开启，看视频关闭 =============\n`);
+}
+if (LIVE == 3) {
+    console.log(`============ 看直播开启，看视频开启，红包雨开启 =============\n`);
 }
 //时间
 nowTimes = new Date(
@@ -255,6 +273,9 @@ if (isGetCookie) {
 } else {
     !(async () => {
         await all();
+        if (HBY == 1) {
+            await $.wait(500)
+        }
         await msgShow();
     })()
     .catch((e) => {
@@ -276,6 +297,7 @@ async function all() {
         return;
     }
     for (let i = 0; i < Length; i++) {
+
         if (COOKIE.iboxpayheaderVal) {
             iboxpayheaderVal = XP_COOKIES.iboxpayheaderVal[i];
             refreshtokenVal = XP_COOKIES.refreshtokenVal[i];
@@ -293,52 +315,61 @@ async function all() {
         await console.log(`-------------------------\n\n🔔开始运行【${$.name+(i+1)}】`)
         console.log('CK获取时间:' + time(Number(oldtime)))
         await refreshtoken(); //更新TOKEN
-        let cookie_is_live = await user(i + 1); //用户名
-        if (!cookie_is_live) {
-            continue;
-        }
-        await cktime(); //CK获取时间
-        await hdid(); //活动id
-        await goldcoin(); //金币信息
-        await coin(); //账户信息
-        await sylist(); //收益列表
-        await splimit(); //视频上限
-        await newcashlist(); //提现查询
-        await cashlist(); //今日提现查询
-        if (!cashcs.amount && CASH >= 1 && $.coin.data.balance / 100 >= CASH) {
-            await withdraw(); //提现
-        }
-        if (LIVE >= 1 && nowTimes.getHours() >= 8 && nowTimes.getHours() <= 23 && $.sylist.resultCode && livecs < 30) {
-            await liveslist(); //直播节目表
-            dd = liveIdcd * 35 - 34
-            console.log(`📍本次直播运行需要${dd}秒` + '\n')
-            await lives(); //看直播
-            await $.wait(dd * 1000)
-
+        if (LIVE == 3 && (nowTimes.getHours() === 12 || nowTimes.getHours() === 19 || nowTimes.getHours() === 21) && (nowTimes.getMinutes() >= 0 && nowTimes.getMinutes() <= 10)) {
+            HBY = 1
+            await hbylq(); //红包雨领取
         }
 
-        if (LIVE != 2 && nowTimes.getHours() <= 18 && $.splimit.data.isUperLimit == false || tts() <= (Number(oldtime) + 48 * 60 * 60 * 1000)) {
+        if (HBY == 0) {
+            let cookie_is_live = await user(i + 1); //用户名
+            if (!cookie_is_live) {
+                continue;
+            }
 
-            await playo(); //播放o
-            await videoo(); //视频o
+            await cktime(); //CK获取时间
+            await hdid(); //活动id
+            await goldcoin(); //金币信息
+            await coin(); //账户信息
+            await sylist(); //收益列表
+            await splimit(); //视频上限
+            await newcashlist(); //提现查询
+            await cashlist(); //今日提现查询
+            if (!cashcs.amount && CASH >= 1 && $.coin.data.balance / 100 >= CASH) {
+                await withdraw(); //提现
+            }
 
-            if (LIVE != 2) {
-                await $.wait(30000)
-                tt = CS * 30 - 29
-                console.log(`📍本次视频运行需要${tt}秒` + '\n')
-                await play(); //播放
-                await video(); //视频
-                await $.wait(tt * 1000)
-                if (!newcashcs.amount) {
-                    await newvideo(); //新人福利
-                }
-                if ($.video.data && $.video.data.goldCoinNumber != 0 && videoPublishId6) {
-                    await goldvideo(); //金蛋视频
-                }
-
+            if (LIVE >= 1 && nowTimes.getHours() >= 8 && nowTimes.getHours() <= 23 && $.sylist.resultCode && livecs < 30) {
+                await liveslist(); //直播节目表
+                dd = liveIdcd * 35 - 34
+                console.log(`📍本次直播运行需要${dd}秒` + '\n')
+                await lives(); //看直播
+                await $.wait(dd * 1000)
 
             }
 
+            if (LIVE != 2 && nowTimes.getHours() <= 18 && $.splimit.data.isUperLimit == false || tts() <= (Number(oldtime) + 48 * 60 * 60 * 1000)) {
+
+                await playo(); //播放o
+                await videoo(); //视频o
+
+                if (LIVES != 2) {
+                    await $.wait(30000)
+                    tt = CS * 30 - 29
+                    console.log(`📍本次视频运行需要${tt}秒` + '\n')
+                    await play(); //播放
+                    await video(); //视频
+                    await $.wait(tt * 1000)
+                    if (!newcashcs.amount) {
+                        await newvideo(); //新人福利
+                    }
+                    if ($.video.data && $.video.data.goldCoinNumber != 0 && videoPublishId6) {
+                        await goldvideo(); //金蛋视频
+                    }
+
+
+                }
+
+            }
         }
 
     }
@@ -469,10 +500,50 @@ function hdid(timeout = 0) {
                     if ($.hdid.resultCode == 1) {
                         spid = $.hdid.data.everyDayActivityList.find(item => item.actTypeId === 9)
                         zbid = $.hdid.data.everyDayActivityList.find(item => item.actTypeId === 10)
+                        hbyid = $.hdid.data.everyDayActivityList.find(item => item.actTypeId === 11)
                         console.log(spid.actName + 'ID：' + spid.actId + '\n' +
-                            zbid.actName + 'ID：' + zbid.actId + '\n');
+                            zbid.actName + 'ID：' + zbid.actId + '\n' + hbyid.actName + 'ID：' + hbyid.actId + '\n');
                         $.message += '【' + spid.actName + 'ID】：' + spid.actId + '\n' +
-                            '【' + zbid.actName + 'ID】：' + zbid.actId + '\n';
+                            '【' + zbid.actName + 'ID】：' + zbid.actId + '\n' + '【' + hbyid.actName + 'ID】：' + hbyid.actId + '\n';
+                    }
+                } catch (e) {
+                    $.logErr(e, resp);
+                } finally {
+                    resolve()
+                }
+            })
+        }, timeout)
+    })
+}
+//红包雨领取
+function hbylq(timeout = 0) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            header = iboxpayheaderVal.replace(`${token}`, `${TOKEN}`).replace(`${oldtime}`, `${tts()}`)
+            hbylqbodyVal = `{
+ "actId": "309"
+}`
+            let url = {
+                url: `https://veishop.iboxpay.com/nf_gateway/nf_customer_activity/day_cash/v1/give_redbag_by_redbag_rain.json`,
+                headers: JSON.parse(header),
+                body: hbylqbodyVal,
+            }
+            $.post(url, async (err, resp, data) => {
+                try {
+                    if (logs) $.log(`${O}, 红包雨领取🚩: ${data}`);
+                    $.hbylq = JSON.parse(data);
+                    if ($.hbylq.resultCode == 1 && $.hbylq.data.goldCoinAmt != 0) {
+                        console.log(`${O} 红包雨领取：本次领取 ${$.hbylq.data.goldCoinAmt}金币,预估金额${$.hbylq.data.goldCoinAmt / 10000} 元\n`)
+                        $.message += `【${O} 红包雨领取】：本次领取 ${$.hbylq.data.goldCoinAmt}金币,预估金额${$.hbylq.data.goldCoinAmt / 10000} 元\n`
+
+                    }
+                    if ($.hbylq.resultCode == 1 && $.hbylq.data.goldCoinAmt == 0) {
+                        console.log(`${O} 红包雨领取：${$.hbylq.data.redbagDesc}\n`)
+                        $.message += `【${O} 红包雨领取】：${$.hbylq.data.redbagDesc}\n`;
+                    }
+                    if ($.hbylq.resultCode == 0) {
+                        console.log(`${O} 红包雨领取：${$.hbylq.errorDesc}\n`);
+                        $.message += `【${O} 红包雨领取】：${$.hbylq.errorDesc}\n`;
                     }
                 } catch (e) {
                     $.logErr(e, resp);
@@ -557,16 +628,17 @@ function videoo(timeout = 0) {
                     if (logs) $.log(`${O}, 视频🚩: ${data}`);
                     $.videoo = JSON.parse(data);
                     if ($.videoo.resultCode == 0) {
-                        LIVE = 2
+                        LIVES = 2
                         console.log('视频奖励：⚠️' + $.videoo.errorDesc + '\n');
                         $.message += '【视频奖励】：⚠️' + $.videoo.errorDesc + '\n'
                     }
                     if ($.videoo.data && $.videoo.data.goldCoinNumber == 0) {
-                        LIVE = 2
+                        LIVES = 2
                         console.log(`视频奖励：恭喜您的账号已灰，已无法获取视频奖励\n`);
                         $.message += `【视频奖励】：恭喜您的账号已灰，已无法获取视频奖励\n`
                     }
                     if ($.videoo.data && $.videoo.data.goldCoinNumber != 0) {
+                        LIVES = 0
                         console.log(`开始领取第1次视频奖励，获得${$.videoo.data.goldCoinNumber}金币\n`);
                         console.log(`视频奖励：共领取1次视频奖励，共${$.videoo.data.goldCoinNumber}金币\n`);
                         $.message += `【视频奖励】：共领取1次视频奖励，共${$.videoo.data.goldCoinNumber}金币\n`
@@ -852,6 +924,11 @@ function sylist(timeout = 0) {
                     if (logs) $.log(`${O}, 收益列表🚩: ${data}`);
                     $.sylist = JSON.parse(data);
 
+                    if ($.sylist.resultCode == 1 && data.match(/"actTypeId":11,/g)) {
+                        hby = data.match(/"actTypeId":11,/g);
+                        hbycs = hby.length;
+                    } else hbycs = 0
+
                     if ($.sylist.resultCode == 1 && data.match(/"actTypeId":10,/g)) {
                         live = data.match(/"actTypeId":10,/g);
                         livecs = live.length;
@@ -864,6 +941,9 @@ function sylist(timeout = 0) {
                     } else videoscs = 0;
 
                     spsy = $.goldcoin.data.coinSum - livecs * 500
+                    console.log('已获得红包雨奖励 ' + livecs + ' 次\n')
+                    $.message +=
+                        '【红包雨收益】：已获得红包雨奖励 ' + hbycs + ' 次\n'
                     console.log('已获得直播奖励 ' + livecs + ' 次，共' + livecs * 500 + '金币\n')
                     $.message +=
                         '【直播收益】：已获得直播奖励 ' + livecs + ' 次，共' + livecs * 500 + '金币\n'
